@@ -1,33 +1,61 @@
-# tensorcore-transcendental
-# GPU-Based Computation of Transcendental Functions
+# TACT: Tensor Accelerated Computation of Transcendentals on GPUs
 
-This repository will contain the implementation of transcendental function computations on GPUs using Tensor Cores.
+![Status](https://img.shields.io/badge/Status-Under%20Review-yellow)
+![Platform](https://img.shields.io/badge/Platform-NVIDIA%20GPUs-green)
+![Language](https://img.shields.io/badge/Language-CUDA%20%2F%20C%2B%2B-blue)
 
-## Project Overview
+**TACT** is a novel software-only framework designed to repurpose idle **Tensor Cores** on modern GPUs for high-performance scientific computing. It addresses the critical resource bottleneck caused by Special Function Units (SFUs) in transcendental function evaluation.
 
-Modern GPUs are widely used for computationally intensive applications such as deep learning, scientific modeling, and image recognition. However, underutilization of certain on-chip resources leads to performance inefficiencies. In this project, we utilize **Tensor Cores** to accelerate transcendental function computations, achieving significant improvements in execution speed and energy efficiency compared to SFU and SP units.
+> **⚠️ Notice: Source Code Availability**
+>
+> The source code and full implementation details are currently **withheld** as this work is under review for publication in **IEEE Transactions on Parallel and Distributed Systems (TPDS)**.
+>
+> Upon acceptance, the full CUDA implementation and C++ APIs will be made publicly available in this repository.
 
-## Current Status
+## 🚀 Key Innovation
 
-🚧 **Code is currently being compiled and will be uploaded soon!** 🚧
+Modern GPUs suffer from a resource imbalance: while scalar units (SFUs/SP cores) are saturated by transcendental functions (e.g., `sin`, `cos`, `exp`), the powerful Tensor Cores often remain idle in non-DL workloads.
 
-## Performance Improvements
+**TACT bridges this gap by:**
+1. **Reformulation:** Mapping Taylor series approximations into **Matrix Multiply-Accumulate (MMA)** operations.
+2. **Function Fusion:** Enabling the concurrent computation of multiple distinct functions (e.g., Sine + Cosine + Tangent) in a single kernel launch using a unified matrix operation.
+3. **Hardware Agnostic:** Requires no hardware modifications and works on standard NVIDIA GPUs (tested on Turing architecture).
 
-Initial results show:
-- Up to **4.1× speedup** over SP units.
-- Up to **3.4× speedup** over SFU units.
-- Up to **18% reduction in energy consumption** compared to SP.
-- Up to **23% reduction in energy consumption** compared to SFU.
-- **100% accuracy** compared to CPU results (up to five decimal places).
+## 📊 Performance Highlights
 
-## Performance Optimization
+TACT has been evaluated against standard hardware Special Function Units (SFUs) and Single-Precision (SP) cores. Key results include:
 
-Based on performance benchmarking, the configuration of **warp size (32 threads per warp) and block size (8 warps per block)** was chosen. Various configurations were tested, and this setup provided the lowest execution time, ensuring optimal utilization of GPU resources.
+### 1. Multi-Function Throughput
+By fusing operations, TACT significantly outperforms dedicated hardware units in multi-function kernels:
+* **Speedup:** Up to **3.36x** faster than SFUs.
+* **Energy Efficiency:** Up to **85.2%** energy reduction compared to SFUs.
 
-## Future Updates
+### 2. Real-World Applications
+The framework demonstrates substantial gains in common scientific algorithms:
+* **Fast Fourier Transform (FFT):**
+    * **4.23x Speedup** vs. SFUs.
+    * **81.5% Energy Savings** vs. SFUs.
+* **Discrete Cosine Transform (DCT):**
+    * **1.09x Speedup** and **18.4% Energy Savings**.
 
-- [ ] Upload complete implementation.
-- [ ] Provide benchmarking scripts.
-- [ ] Add installation and usage instructions.
+### 3. Numerical Accuracy
+TACT offers a programmer-defined trade-off between speed and precision. In standard configurations, it maintains **100% numerical accuracy** at a $10^{-5}$ tolerance relative to double-precision CPU baselines (`libm`).
 
-Stay tuned for updates! 😊
+## 🛠 Methodology Overview
+
+TACT shifts the paradigm of function evaluation from scalar sequences to massive parallel matrix processing. The core insight is reformulating polynomial approximations (Taylor/Maclaurin series) so they map perfectly onto the $D = A \times B + C$ datapath of Tensor Cores.
+
+* **Input Packing:** Scalar inputs are intelligently packed into input matrices (`Tile A`) to maximize density.
+* **Coefficient Broadcasting:** Polynomial coefficients are loaded into shared memory (`Tile B`) and broadcast across warps to minimize memory traffic.
+* **Fused Execution:** A single matrix multiplication computes multiple functions simultaneously by partitioning the coefficient matrix.
+
+## 📫 Contact
+
+For academic inquiries or access regarding peer review, please contact:
+
+**Hedieh Moftakhari**
+* M.Sc. in Computer Architecture, Sharif University of Technology
+* Email: Hedieh.rm@gmail.com
+
+---
+*© 2025 Hedieh Moftakhari. All Rights Reserved.*
